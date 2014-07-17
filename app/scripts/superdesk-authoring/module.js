@@ -3,10 +3,17 @@ define([
 ], function(angular) {
     'use strict';
 
-    AuthoringController.$inject = ['$scope', 'api', '$location', 'workqueue', 'notify', 'gettext'];
-    function AuthoringController($scope, api, $location, workqueue, notify, gettext) {
+    AuthoringController.$inject = ['$scope', 'api', '$location', 'workqueue', 'notify', 'gettext', 'modal', '$window'];
+    function AuthoringController($scope, api, $location, workqueue, notify, gettext, modal, $window) {
 
-    	$scope.item = null;
+        $window.onbeforeunload = function() {
+            if ($scope.dirty) {
+                return 'There are unsaved changes. If you navigate away, your changes will be lost.';
+            }
+        };
+
+        $scope.dirty = null;
+        $scope.item = null;
     	var _item = null;
 
         $scope.workqueue = workqueue.all();
@@ -23,6 +30,18 @@ define([
                 _item = null;
             }
         });
+
+        $scope.$watch('item', function(item, oldItem) {
+            if (item) {
+                if ($scope.dirty === null) {
+                    $scope.dirty = false;
+                } else {
+                    $scope.dirty = true;
+                }
+            } else {
+                $scope.dirty = null;
+            }
+        }, true);
 
         $scope.create = function() {
             var temp = {type: 'text'};
@@ -43,21 +62,54 @@ define([
     	$scope.save = function() {
     		api.archive.save(_item, $scope.item).then(function(res) {
                 workqueue.update($scope.item);
+                $scope.dirty = false;
+                notify.success(gettext('Item updated.'));
     		}, function(response) {
     			notify.error(gettext('Error. Item not updated.'));
     		});
     	};
 
         $scope.close = function() {
+            if ($scope.dirty) {
+                return modal.confirm(gettext('There are unsaved changes. Please confirm you want to close the article without saving.'))
+                .then(function() {
+                    _close();
+                });
+            } else {
+                _close();
+            }
+        };
+
+        var _close = function() {
             workqueue.remove(_item);
             $location.search('_id', workqueue.getActive());
         };
-
     }
 
     VersioningController.$inject = ['$scope', 'api', '$location'];
     function VersioningController($scope, api, $location) {
+        $scope.item = null;
+        $scope.versions = null;
+        $scope.selected = null;
 
+        $scope.$watch(function() {
+            return $location.search()._id;
+        }, function(_id) {
+            $scope.item = null;
+            $scope.versions = null;
+
+            if (_id) {
+                api.archive.getById(_id)
+                .then(function(result) {
+                    $scope.item = result;
+                    api.archive.getByUrl(result._links.self.href + '?version=all&embedded={"user":1}')
+                    .then(function(result) {
+                        $scope.versions = result;
+                        $scope.selected = _.find($scope.versions._items, {_version: $scope.item._latest_version});
+                    });
+                });
+            }
+        });
     }
 
     WorkqueueService.$inject = ['storage'];
@@ -156,8 +208,7 @@ define([
 
     }
 
-    var app = angular.module('superdesk.authoring', []);
-    app
+    return angular.module('superdesk.authoring', ['superdesk.editor'])
     	.service('workqueue', WorkqueueService)
 
         .config(['superdeskProvider', function(superdesk) {
@@ -189,5 +240,4 @@ define([
 	                ]
 	            });
         }]);
-    return app;
 });

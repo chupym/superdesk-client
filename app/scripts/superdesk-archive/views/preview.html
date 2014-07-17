@@ -1,7 +1,8 @@
 <div>
     <div class="header">
         <ul class="info-list pull-left">
-            <li>{{ 'Provider:' | translate }} <span>{{ item.provider }}</span></li>
+            <li ng-if="$parent.type === 'archive'">{{ 'Source:' | translate }} <span>{{ item.provider }}</span></li>
+            <li ng-if="$parent.type !== 'archive'">{{ 'Provider:' | translate }} <span>{{ item.provider }}</span></li>
             <li>{{ 'Version:' | translate }} <span>{{ item.version }}</span></li>
         </ul>
     </div>
@@ -30,6 +31,10 @@
             
             <div ng-if="item.type == 'audio'">
                 <audio controls="controls" sd-sources data-renditions="item.renditions"></audio>
+            </div>
+
+            <div ng-if="item.type == 'video'">
+                <video controls="controls" sd-sources data-renditions="item.renditions"></video>
             </div>
 
             <div class="text" ng-show="item.body_html" sd-html-preview="item.body_html"></div>
