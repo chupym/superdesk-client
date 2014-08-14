@@ -16,7 +16,7 @@
 					{{ desk.name }}
 					<div class="dropdown pull-right">
                       <a href="" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-cog"></i> <b class="caret"></b></a>
-                      <ul class="dropdown-menu sf-dropdown-simple sf-right">
+                      <ul class="dropdown-menu pull-right">
                         <li><a href="" ng-click="edit(desk)"><i class="icon-pencil"></i> {{'Edit Desk' | translate}}</a></li>
                         <li><a href="" ng-click="remove(desk)"><i class="icon-trash"></i> {{'Delete Desk' | translate }}</a></li>
                       </ul>
@@ -57,14 +57,14 @@
 										</span> 
 										<b class="caret"></b>
 									</a>
-									<ul class="dropdown-menu sf-dropdown-simple sf-right">
+									<ul class="dropdown-menu">
 									    <li ng-repeat="status in desk.statuses"><label><input type="checkbox"> {{ status.key }}</label></li>
 									</ul>
 								</div>
 
 		                       	<div class="dropdown">
 		                        	<a href="" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-cog"></i> <b class="caret"></b></a>
-		                        	<ul class="dropdown-menu sf-dropdown-simple sf-right">
+		                        	<ul class="dropdown-menu">
 		                        		<li><a href="" ng-click=""><i class="icon-trash"></i> {{'Delete' | translate}}</a></li>
 		                        	</ul>
 		                      	</div>
@@ -91,14 +91,19 @@
 
 		<div class="modal-body modal-body-min">
 			<form name="deskForm">
-				<div class="popup-subnav subnav">
-					<ul class="nav nav-pills pull-left">
-						<li class="active"><a href="" translate>General</a></li>
-						<li ng-show><a href="" translate>Desk members</a></li>
-						<li ng-show><a href="" translate>Desk boards</a></li>
-					</ul>
+				<div class="popup-subnav">
+					<ul class="nav nav-tabs">
+        				<li class="active"><button translate>General</button></li>
+        			</ul>
 				</div>
-				<input type="text" placeholder="{{'Enter Desk name' | translate}}" class="fullwidth-input" ng-model="editDesk.name" required> 
+				<div class="modal-screen">
+					<fieldset>
+						<div class="field">
+							<label translate>Desk name</label>
+							<input type="text" class="fullwidth-input" ng-model="editDesk.name" required> 
+						</div>
+					</fieldset>
+				</div>
 			</form>
 		</div>
 
@@ -121,7 +126,7 @@
 					<div class="members">
 				  		<ul class="member-avatars">
 							<li ng-repeat="user in selectedMembers" >
-								<figure ><img sd-user-avatar data-src="user.picture_url" alt="user.display_name"></figure>
+								<figure class="avatar"><img sd-user-avatar data-src="user.picture_url" alt="user.display_name"></figure>
 								<div class="member-name">
 									{{user.first_name}} {{user.last_name}}
 									<span class="delete" ng-click="removeMember(user)"><i class="icon-close-small icon-white"></i></span>
@@ -142,7 +147,7 @@
 							<li ng-repeat="user in users._items | filter:notIn(selectedMembers)| filter:memberSearch" >
 								<figure class="avatar"><img sd-user-avatar data-src="user.picture_url" alt="user.display_name"></figure>
 								<span class="fullname" >{{ user.first_name }} {{ user.last_name }}</span>
-								<button class="btn btn-mini btn-success pull-right" ng-click="addMember(user)" tooltip="{{ 'Add to desk' | translate}}" tooltip-placement="left"><i class="icon-plus-small icon-white"></i></button>
+								<button class="btn btn-mini btn-green pull-right" ng-click="addMember(user)" tooltip="{{ 'Add to desk' | translate}}" tooltip-placement="left"><i class="icon-plus-small icon-white"></i></button>
 							</li>
 					    </ul>
 				  	</div>
@@ -155,7 +160,7 @@
 					    </div>
 						<ul class="member-avatars">
 							<li ng-repeat="user in selectedMembers" >
-								<figure ><img sd-user-avatar data-src="user.picture_url" alt="user.display_name"></figure>
+								<figure class="avatar"><img sd-user-avatar data-src="user.picture_url" alt="user.display_name"></figure>
 								<div class="member-name">
 									{{user.first_name}} {{user.last_name}}
 									<span class="delete" ng-click="removeMember(user)"><i class="icon-close-small icon-white"></i></span>

@@ -13,7 +13,7 @@
 @black:                 #000;
 @grayDarker:            #222;
 @grayDark:              #333;
-@gray:                  #555;
+@gray:                  #666;
 @grayLight:             #999;
 @grayLighter:           #F5F5F5;
 @white:                 #fff;
@@ -26,16 +26,17 @@
 @red:                   #9d261d;
 @yellow:                #ffc40d;
 @orange:                #f89406;
-@pink:                  #c3325f;
-@purple:                #7a43b6;
 
-@sd-background: 		#f8f8f8;
+
+
 
 // Scaffolding
 // -------------------------
-@bodyBackground:        @sd-background; 
-@textColor:             @grayDark;
-
+@sd-background: 		#f8f8f8; 
+@sd-text:             	@grayDark;
+@sd-blue: 				#5ea9c8;
+@sd-blue-text: 			#3599b6;
+@sd-hover:				#eff7fa;
 
 // Links
 // -------------------------
@@ -62,32 +63,6 @@
 @tableBackgroundHover:              #f5f5f5; // for hover
 @tableBorder:                       #ddd; // table and cell border
 
-
-// Buttons
-// -------------------------
-@btnBackground:                     @white;
-@btnBackgroundHighlight:            darken(@white, 10%);
-@btnBorder:                         darken(@white, 20%);
-
-@btnPrimaryBackground:              @linkColor;
-@btnPrimaryBackgroundHighlight:     spin(@btnPrimaryBackground, 15%);
-
-@btnInfoBackground:                 #5bc0de;
-@btnInfoBackgroundHighlight:        #2f96b4;
-
-@btnSuccessBackground:              #62c462;
-@btnSuccessBackgroundHighlight:     #51a351;
-
-@btnWarningBackground:              lighten(@orange, 15%);
-@btnWarningBackgroundHighlight:     @orange;
-
-@btnDangerBackground:               #ee5f5b;
-@btnDangerBackgroundHighlight:      #bd362f;
-
-@btnInverseBackground:              @gray;
-@btnInverseBackgroundHighlight:     @grayDarker;
-
-
 // Forms
 // -------------------------
 @inputBackground:               @white;
@@ -98,10 +73,10 @@
 // Dropdowns
 // -------------------------
 @dropdownBackground:            @white;
-@dropdownBorder:                rgba(0,0,0,.2);
-@dropdownLinkColor:             @grayDark;
-@dropdownLinkColorHover:        @white;
-@dropdownLinkBackgroundHover:   @linkColor;
+@dropdownBorder:                1px solid #c6c6c6;
+@dropdownLinkColor:             @sd-text;
+@dropdownLinkColorHover:        @sd-text;
+@dropdownLinkBackgroundHover:   @sd-hover;
 
 
 
@@ -170,20 +145,19 @@
 @infoBorder:              darken(spin(@infoBackground, -10), 7%);
 
 
-
 // Superdesk special vars
 // --------------------------------------------------
 @sf-main-menu-width : 300px;
-
+@nav-height : 48px;
 // Theme
 // -------------------------
-@background-main: @bodyBackground;
+@background-main: @sd-background;
 
 
 // Positioning
 // -------------------------
-@topspace : 40px;
-@subnav-height: 53px;  /*was 65*/
+@topspace : @nav-height;
+@subnav-height: 49px;  /*was 65*/
 @subnav-mobile-height: 45px;
 
 @subnav-level2: 40px;
@@ -199,15 +173,14 @@
 @tabpane-width:       330px;
 @tabcontent-padding:  15px;
 
-@sd-color-blue: #5ea9c8;
-@sd-color-blue-text: #3599b6;
+
 
 @sidepreview-width : 440px;
 
 @notification-pane-width: 300px;
 
 // Scratchpad
-@scratchpad-closed : 33px;
+@scratchpad-closed : 36px;
 @scratchpad-content-height : 285px;
 
 // Article edit screen

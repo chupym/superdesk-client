@@ -3,12 +3,9 @@
 // ----------------------------------------------------------------------------------------
 @import 'mixins.less';
 @import 'variables.less';
-@import 'superdesk-base-template.less';
 
 .users {	//page styles
-	.users-subnav {
-    .subnav-level2();
-    
+	.users-subnav {    
 		.multiple-action {
 			margin-left: 30px;
 			float: left;
@@ -48,6 +45,9 @@
 			height: 40px;
 			border-bottom: 1px solid #d7d7d7;
 			position: relative;
+      .avatar {
+          margin: 5px;
+      }
 			> div {
 				float: left;
 				height: 30px;
@@ -60,20 +60,6 @@
 					span {
 						vertical-align: middle;
 						margin: 0;
-					}
-				}
-				&.avatar {
-					width: 30px;
-					figure {
-						.border-radius(15px);
-						overflow: hidden;
-						width: 30px;
-						height: 30px;
-						img {
-							width: 30px;
-							height: 30px;
-							vertical-align: baseline;
-						}
 					}
 				}
 				@user-table-actions-width: 40px;
@@ -448,16 +434,11 @@
     float: left;
     margin-right: 20px;
     position: relative;
-    figure {
-        width: 82px;
-        height: 82px;
+    .avatar {
+        width: 100%;
+        height: 100%;
         .border-radius(3px);
-        overflow: hidden;
-        img {
-          width: 82px;
-          max-width: 82px;
-          height: auto;
-        }
+        background-image: url('../../images/avatar_200.png');
     }
     .change-photo {
       display: none;

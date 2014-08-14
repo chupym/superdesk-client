@@ -3,7 +3,6 @@
 // ----------------------------------------------------------------------------------------
 @import 'mixins.less';
 @import 'variables.less';
-@import 'superdesk-base-template.less';
 
 .dashboard-container {
 	position: absolute;
@@ -193,7 +192,6 @@ Widgets styles
 		border: 1px solid #ccc;
 		margin-right: 30px;
 		margin-bottom: 30px;
-		.gradientBar(#fff,#e0e0e0);
 		.border-radius(3px);
 		.title {
 			text-align: center;
@@ -219,10 +217,6 @@ Widgets styles
 	}
 }
 
-
-.workspace-subnav {
-	.subnav-level2();
-}
 
 /*
 ---------------------------------------------
@@ -272,7 +266,7 @@ TASK PAGE
 			color: #767676;
 			&.active {
 				color: #000;
-				border-bottom: 3px solid @sd-color-blue;
+				border-bottom: 3px solid @sd-blue;
 			}
 		}
 	}	
@@ -288,6 +282,46 @@ CONTENT PAGE
 ---------------------------------------------
 */
 
+.views-settings.dropdown {
+	.dropdown-menu {
+		padding-bottom: 0 !important;
+		li {
+			text-transform: uppercase;
+			span i {
+				float: right;
+				display: none;
+				margin-right: 0;
+			}
+			.full {
+				padding-left:20px;
+				text-transform: uppercase;
+			}
+			&:hover {
+				span i {
+					display: inline-block;
+				}
+			}
+			.svg-icon-add {
+				margin-top: -4px;
+			}	
+		}
+	}
+}
+
+.add-view-modal {
+	top: 20px !important;
+	bottom: 20px !important;
+	width: 450px;
+	margin: 0 0 0 -225px;
+	left: 50% !important;
+	position: absolute;
+	.modal-body {
+		background: #f8f8f8;
+	}
+	.subnav {
+		
+	}
+}
 
 /*
 ---------------------------------------------

@@ -17,7 +17,8 @@ define([
     return angular.module('superdesk.dashboard', [
         'superdesk.dashboard.widgets',
         'superdesk.dashboard.grid',
-        'superdesk.dashboard.world-clock'
+        'superdesk.dashboard.world-clock',
+        'superdesk.workspace.content'
     ])
 
     .service('workspace', require('./workspace-service'))
@@ -41,12 +42,6 @@ define([
         superdesk.activity('/workspace/tasks', {
             label: gettext('Workspace'),
             templateUrl: require.toUrl('./views/workspace-tasks.html'),
-            topTemplateUrl: require.toUrl('./views/workspace-topnav.html'),
-            beta: true
-        });
-        superdesk.activity('/workspace/content', {
-            label: gettext('Workspace'),
-            templateUrl: require.toUrl('./views/workspace-content.html'),
             topTemplateUrl: require.toUrl('./views/workspace-topnav.html'),
             beta: true
         });

@@ -1,4 +1,4 @@
-<div class="subnav subnav-fixed">
+<div class="subnav">
 
     <h3 class="page-nav-title" translate>Users</h3>
 
@@ -14,7 +14,7 @@
 </div>
 
 <section class="main-section with-subnav users">
-    <div class="users-subnav">
+    <div class="users-subnav subnav level2">
         <div sd-searchbar></div>
         <div sd-pagination
             data-items="users"
@@ -27,7 +27,6 @@
             <div class="users-table">
                 <ul class="table-header">
                     <li>
-                        <div class="avatar"></div>
                         <div class="row-wrapper">
                             <div class="name" sd-sort data-label="{{ 'Full name' | translate }}" data-field="full_name"></div>
                             <div class="username" sd-sort data-label="{{ 'Username' | translate }}" data-field="username"></div>
@@ -60,7 +59,7 @@
 
         <div class="preview-pane">
             <div class="actions" ng-if="selected.user">
-                <a ng-href="" ng-click="intent('detail', 'user', selected.user)" ng-show="selected.user._id" class="btn btn-light pull-left" translate>View full profile</a>
+                <a ng-href="" ng-click="intent('detail', 'user', selected.user)" ng-show="selected.user._id" class="btn pull-left" translate>View full profile</a>
                 <div class="close" ng-click="selected.user = null"><i class="icon-close-small"></i></div>
             </div>
 
