@@ -1,13 +1,31 @@
 (function() {
 'use strict';
 
+ContentCtrlFactory.$inject = ['api', 'superdesk', 'workqueue'];
+function ContentCtrlFactory(api, superdesk, workqueue) {
+    return function ContentCtrl($scope) {
+        /**
+         * Create an item and start editing it
+         */
+        this.create = function() {
+            var item = {type: 'text'};
+            api('archive')
+                .save(item)
+                .then(function() {
+                    workqueue.add(item);
+                    superdesk.intent('author', 'article', item);
+                });
+        };
+    };
+}
+
 ViewsCtrlFactory.$inject = ['api', 'session'];
 function ViewsCtrlFactory(api, session) {
     /**
      * Views controller
      */
     return function ViewsCtrl($scope) {
-        var orig, desk;
+        var orig, desk, resource = api('content_view');
 
         this.flags = {};
         this.views = null;
@@ -24,8 +42,8 @@ function ViewsCtrlFactory(api, session) {
             orig = view;
 
             this.flags = {};
-            if (view.filter && view.filter.query) {
-                this.flags.query = view.filter.query.query_string.query;
+            if (view.filter && view.filter.query.filtered) {
+                this.flags.query = view.filter.query.filtered.query.query_string.query;
             }
 
             this._issues = null;
@@ -47,11 +65,11 @@ function ViewsCtrlFactory(api, session) {
                 this.edited.desk = desk;
             }
 
-            this.edited.filter = {query: {query_string: {query: this.flags.query || '*'}}};
+            this.edited.filter = {query: {filtered: {query: {query_string: {query: this.flags.query || '*'}}}}};
 
             this.edited.location = this.edited.location || 'archive'; // for now
 
-            api.views.save(orig, this.edited)
+            resource.save(orig, this.edited)
                 .then(angular.bind(this, function() {
                     this.reload();
                     this.cancel();
@@ -70,7 +88,7 @@ function ViewsCtrlFactory(api, session) {
                 criteria.where = {user: session.identity._id};
             }
 
-            return api.views.query(criteria).then(angular.bind(this, function(response) {
+            return resource.query(criteria).then(angular.bind(this, function(response) {
                 this.views = response._items;
             }));
         };
@@ -91,13 +109,6 @@ function DeskViewsDirective() {
 
 angular.module('superdesk.workspace.content', [])
     .factory('ViewsCtrl', ViewsCtrlFactory)
-    .directive('sdDeskViews', DeskViewsDirective)
-
-    .config(['apiProvider', function(apiProvider) {
-        apiProvider.api('views', {
-            type: 'http',
-            backend: {rel: 'content_view'}
-        });
-    }]);
-
+    .factory('ContentCtrl', ContentCtrlFactory)
+    .directive('sdDeskViews', DeskViewsDirective);
 })();

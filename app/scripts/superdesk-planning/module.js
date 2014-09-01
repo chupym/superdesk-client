@@ -3,8 +3,15 @@ define([
 ], function(angular) {
     'use strict';
 
+    var coverageTypes = ['story', 'photo', 'video', 'graphics', 'live-blogging'];
+
     function PlanningItem(deskId) {
         this.headline = null;
+    }
+
+    function Coverage(planningItemId) {
+        this.planning_item = planningItemId;
+        this.coverage_type = coverageTypes[0];
     }
 
     PlanningService.$inject = ['$location', 'api', 'es', 'notify', 'desks'];
@@ -125,21 +132,31 @@ define([
                 };
 
                 scope.addCoverage = function() {
-                    scope.coverage = {};
+                    scope.coverage = new Coverage(scope.item._id);
                 };
 
                 scope.saveCoverage = function(coverage) {
                     var promise = null;
                     if (coverage) {
-                        promise = api.coverages.save(coverage);
+                        promise = api.coverages.save(coverage)
+                        .then(function(result) {
+                            var index = _.findIndex(scope.origCoverages._items, {_id: result._id});
+                            if (index !== -1) {
+                                scope.origCoverages._items[index] = result;
+                                scope.coverages._items[index] = _.cloneDeep(result);
+                            }
+                        });
                     } else {
                         scope.coverage.planning_item = scope.item._id;
-                        promise = api.coverages.save({}, scope.coverage);
+                        promise = api.coverages.save({}, scope.coverage)
+                        .then(function(result) {
+                            scope.origCoverages._items.unshift(result);
+                            scope.coverages._items.unshift(_.cloneDeep(result));
+                        });
                     }
                     promise.then(function(result) {
                         scope.coverage = null;
                         notify.success(gettext('Item saved.'));
-                        fetchCoverages();
                     });
                 };
 
@@ -163,7 +180,7 @@ define([
                 scope.isDirty = function(coverage) {
                     if (coverage) {
                         var dirty = false;
-                        var fields = ['ed_note', 'assigned_user'];
+                        var fields = ['ed_note', 'assigned_user', 'coverage_type'];
                         var origCoverage = {};
                         if (coverage._id) {
                             origCoverage = scope.origCoverages._items[_.findIndex(scope.coverages._items, {_id: coverage._id})];
@@ -209,7 +226,10 @@ define([
     function AssigneeBoxDirective(api, desks) {
         return {
             templateUrl: 'scripts/superdesk-planning/views/assignee-box.html',
-            scope: {coverage: '='},
+            scope: {
+                coverage: '=',
+                assignee: '='
+            },
             link: function(scope, elem) {
                 scope.open = false;
                 scope.users = null;
@@ -259,9 +279,19 @@ define([
         };
     }
 
+    function CoverageTypeDirective() {
+        return {
+            templateUrl: 'scripts/superdesk-planning/views/coverage-type.html',
+            controller: ['$scope', function($scope) {
+                $scope.coverageTypes = coverageTypes;
+            }]
+        };
+    }
+
     return angular.module('superdesk.planning', ['superdesk.elastic'])
     	.directive('sdPreviewItem', PreviewItemDirective)
         .directive('sdAssigneeBox', AssigneeBoxDirective)
+        .directive('sdCoverageType', CoverageTypeDirective)
         .service('planning', PlanningService)
         .config(['apiProvider', function(apiProvider) {
             apiProvider.api('planning', {

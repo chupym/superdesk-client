@@ -9,6 +9,8 @@
 	width: 8px;
 	height: 8px;
 	margin: -1px 0;
+	position: fixed;
+	right: 10px;
 }
 ::-webkit-scrollbar:hover {
 	background-color: #e8e8e8;
@@ -254,7 +256,7 @@
 // Checkox custom
 // ---------------------------------------------
 
-.sf-checkbox-custom {
+.sd-checkbox {
 	width: 17px;
 	height: 15px;
 	display: inline-block;
@@ -265,101 +267,51 @@
 		background-position: 0 -15px;
 		cursor: pointer;
 	}
-}
-.sf-checked {
-	background-position: 0 -30px !important;
-	&:hover {
+	&.checked {
 		background-position: 0 -30px !important;
+		&:hover {
+			background-position: 0 -30px !important;
+		}
 	}
 }
+
 
 
 // Toggle input
 // ---------------------------------------------
 
-.sf-toggle {
-		display:inline-block;
-		width:55px;
-		height:16px;
-		background: #444;
-		position:relative;
-		border:1px solid #3a3a3a;
-		cursor:pointer;
-		.border-radius(3px); 
-		overflow: hidden;
-		&.on-off-toggle {
-	&:before {
-		content: "ON";
-		position: absolute;
-		font-size: 11px;
-		color: #ebebeb;
-		top: 0;
-		left: 5px;
-	}
-	&:after {
-		content: "OFF";
-		position: absolute;
-		font-size: 11px;
-		color: #ebebeb;
-		top: 0;
-		left: 32px;
-	}
-		}
-		.sf-toggle-custom-inner {
-	position:absolute;
-	left:2px;
-	width:21px;
-	top:2px;
-	height:12px;
-	background:#ebebeb;
-	.border-radius(2px);
-	.transition( all 0.3s ease);
-		}
-		&.sf-checked {
-	&.on-off-toggle {
-		background: #369dbb;
-		border-color:#3091ad; 
-	}
-	.sf-toggle-custom-inner {
-			left:32px !important;
-	}
-		}
-		input[type="checkbox"] {
-	display:none;
-		}
-		&.sf-disable {
+.sd-toggle {
+	display:inline-block;
+	width:34px;
+	height:16px;
 	background: #e0e0e0;
-	border:1px solid #d8d8d8;
-	&:hover {
-		cursor: default;
+	position:relative;
+	cursor:pointer;
+	margin-right: 5px;
+	.border-radius(2px); 
+	overflow: hidden;
+	.box-shadow(inset 0 1px 0 0 rgba(0,0,0,0.15));
+	.inner {
+		position:absolute;
+		left:2px;
+		width:14px;
+		top:2px;
+		height:12px;
+		background:@white;
+		.border-radius(2px);
+		.transition( all 0.3s ease);
 	}
-	.sf-toggle-custom-inner {
-			background:#f0f0f0;
-	}
-		}
-}
-
-
-// Date picker
-// ---------------------------------------------
-
-.sf-datepicker {
-	height: 16px;
-	line-height: 16px;
-	input {
-		width: 140px;
-		border: 0;
-		height: 16px;
-		padding: 0;
-		vertical-align: top;
-		background: none;
-		color: #787878;
-		&:focus {
-			color: #333;
-			.box-shadow(none) !important;
+	&.checked {
+		background: @sd-blue;
+		.inner {
+			left:18px;
 		}
 	}
+	input[type="checkbox"] {
+		display:none;
+	}
 }
+
 
 // Slider input
 // ---------------------------------------------
@@ -517,6 +469,26 @@
 }
 
 
+// Back screen button
+// ---------------------------------------------
+.backlink {
+	background: transparent url('../../images/back-arrow.png') no-repeat 5px 7px;
+	padding-left: 25px;
+	text-decoration: none;
+	color: @sd-text;
+	display: inline-block;
+	border:0;
+	.transition(all ease 0.2s);
+	vertical-align: middle;
+	height: 28px;
+	line-height: 28px;
+	margin-top: -4px;
+	&:hover {
+		background-position: 0 7px;
+		text-decoration: none;
+		color: @sd-text;
+	}
+}
 
 
 // Activity log
@@ -530,13 +502,6 @@
 		list-style-type: none;
 		li {
 			&.activity {
-				padding: 10px;
-				background: #fff;
-				border-bottom: 1px solid #dfdfdf;
-				.border-radius(2px);
-				margin-bottom: 5px;
-				position: relative;
-
 				.activity-content {
 					padding-left: 45px;
 					margin-top: -3px;
@@ -573,7 +538,9 @@
 						}
 					} 
 				}
-
+				&:hover {
+					cursor: default;
+				}
 			}
 		}
 	}
@@ -711,7 +678,7 @@
 // Pagination
 // ---------------------------------------------
 
-.sf-pagination {
+.sd-pagination {
 	.btn {
 		padding: 10px;
 		i {
@@ -806,10 +773,10 @@
 
 
 
-// Plain table - TODO: needs refactor
+// Plain list
 // ---------------------------------------------
 
-.plain-table {
+.plain-list {
 	margin: 0;
 	padding: 0;
 	list-style-type: none;
@@ -818,69 +785,73 @@
 	}
 	> li {
 		border-bottom:1px solid #e5e5e5;
-		height: 40px;
+		height: 41px;
 		line-height: 40px;
 		cursor: pointer;
 		position: relative;
 		padding: 0 5px;
-		&:hover {
-			background: #eff7fa;
-		}
+		.border-box();
 		
-		figure {
+		&:hover {
+			background: @sd-hover;
+		}
+		.btn-mini {
+			margin-top: 10px;
+		}
+	}
+}
+
+.plain-small {
+	> li {
+		height: 31px;
+		line-height: 30px;
+	}
+}
+
+.users-list {
+	> li {
+		.avatar {
 			margin-top: 5px;
-			width: 30px;
-			height: 30px;
-			float: left;
 			margin-right: 15px;
-			img {
-				width: 30px;
-				height: 30px;
-				vertical-align: initial;
-			}
 		}
-		.sf-inline-input {
-			height: 24px;
-			width: 80%;
-		}
-		.table-buttons {
-			float: right;
-			margin-left: 10px;	
-			visibility: hidden;
-			width: 48px;
-			text-align: right;
-			a {
-				width: 14px;
-				height: 14px;
-				margin-right: 2px;
-				padding: 3px;
-				display: inline-block;
-				vertical-align: middle;
-				.border-radius(3px);
-				&:hover {
-					background-color: #b0c9f8;
-				}
-			}
-		}
-		&:hover .table-buttons {
-			visibility: visible;
+		.name {
+			font-size: 13px;
+      		color: @sd-blue-text;
 		}
 	}
-
-	.dropdown-simple {
-		display: inline-block;
-		float: right;
-	}
-
 }
 
-.small-plain {
-	max-height: 150px;
-	overflow-y: scroll; 
-		> li {
-		padding: 3px 5px !important;
+.plain-small.users-list {
+	> li .avatar {
+		margin-top: 3px;
 	}
 }
+
+
+// Card list
+// ---------------------------------------------
+.card-list > li , .card {
+	display: block;
+	padding: 10px;
+	background: #fff;
+	border: 1px solid #fff;
+	border-bottom-color: #dfdfdf;
+	.border-radius(2px);
+	margin-bottom: 5px;
+	position: relative;
+	&:hover {
+		cursor: pointer;
+		.box-shadow(0 0px 0px 1px #ddd);
+	}
+	&.selected {
+		background-color: @sd-hover;
+		border-color: #dfdfdf;
+		&:hover {
+			.box-shadow(0 1px 0px 0px #ddd);
+		}
+	}
+}
+
 
 
 // OR label

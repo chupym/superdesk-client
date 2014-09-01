@@ -50,12 +50,6 @@
 	.items-list {
 		margin-top: 15px;
 		.planning-item {
-			padding: 10px;
-			border: 1px solid #fff;
-			border-bottom-color: #dfdfdf;
-			background: #fff;
-			.border-radius(3px);
-			margin-bottom: 6px;
 			.header {
 				min-height: 24px;
 				margin-bottom: 8px;
@@ -77,10 +71,7 @@
 					.task-label;
 				}
 			}
-			&:hover {
-				cursor: pointer;
-				.box-shadow(0 0px 0px 1px #ddd);
-			}
+			
 		}
 	} //list view
 
@@ -289,6 +280,9 @@
 			position: absolute;
 			top: 0; left: 0;
 			.opacity(90);
+			i {
+				vertical-align: text-top;
+			}
 		}
 		&:hover {
 			cursor: pointer;
@@ -347,15 +341,14 @@
 		.border-radius(3px);
 
 		&:before {
-			.rotate(-90deg);
-			width:23px;
-			height:16px;
+			width: 15px;
+			height: 22px;
 			display: block;
 			z-index: 100;
 			position: absolute;
-			left: -19px;
-			top: 22px;
-			background: url(../../images/dropdown-arrow-top.png) no-repeat;
+			left: -15px;
+			top: 18px;
+			background: url(../../images/dropdown-arrow-side.png) no-repeat;
 			content: " ";
 		}
 

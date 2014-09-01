@@ -3,58 +3,148 @@ define([
 ], function(angular) {
     'use strict';
 
-    AuthoringController.$inject = ['$scope', 'api', '$location', 'workqueue', 'notify', 'gettext', 'modal', '$window'];
-    function AuthoringController($scope, api, $location, workqueue, notify, gettext, modal, $window) {
+    LockService.$inject = ['$q', 'api', 'session'];
+    function LockService($q, api, session) {
 
-        $window.onbeforeunload = function() {
-            if ($scope.dirty) {
-                return gettext('There are unsaved changes. If you navigate away, your changes will be lost.');
+        /**
+         * Lock an item
+         */
+        this.lock = function(item) {
+            if (this.isLocked(item)) {
+                return $q.reject();
+            } else {
+                return api('archive_lock', item).save({});
             }
         };
 
-        var _item;
+        /**
+         * Unlock an item
+         */
+        this.unlock = function(item) {
+            return api('archive_unlock', item).save({});
+        };
+
+        /**
+         * Test if an item is locked
+         */
+        this.isLocked = function(item) {
+            return item && item.lock_user && item.lock_user !== session.identity._id;
+        };
+    }
+
+    ConfirmDirtyFactory.$inject = ['$window', '$q', 'modal', 'gettext'];
+    function ConfirmDirtyFactory($window, $q, modal, gettext) {
+        /**
+         * Asks for user confirmation if there are some changes which are not saved.
+         * - Detecting changes via $scope.dirty - it's up to the controller to set it.
+         */
+        return function ConfirmDirty($scope) {
+            $window.onbeforeunload = function() {
+                if ($scope.dirty) {
+                    return gettext('There are unsaved changes. If you navigate away, your changes will be lost.');
+                }
+            };
+
+            $scope.$on('$destroy', function() {
+                $window.onbeforeunload = angular.noop;
+            });
+
+            this.confirm = function() {
+                if ($scope.dirty) {
+                    return confirmDirty();
+                } else {
+                    return $q.when();
+                }
+            };
+
+            function confirmDirty() {
+                return modal.confirm(gettext('There are unsaved changes. Please confirm you want to close the article without saving.'));
+            }
+        };
+    }
+
+    AuthoringController.$inject = [
+        '$scope',
+        '$routeParams',
+        'superdesk',
+        'api',
+        'workqueue',
+        'notify',
+        'gettext',
+        'ConfirmDirty',
+        'lock'
+    ];
+
+    function AuthoringController($scope, $routeParams, superdesk, api, workqueue, notify, gettext, ConfirmDirty, lock) {
+        var _item,
+            confirm = new ConfirmDirty($scope);
+
         $scope.item = null;
         $scope.dirty = null;
         $scope.workqueue = workqueue.all();
+        $scope.editable = false;
+        $scope.currentVersion = null;
         setupNewItem();
 
         function setupNewItem() {
-            var _id = $location.search()._id;
-            if (_id) {
-                _item = workqueue.find({_id: _id}) || workqueue.active;
-                $scope.item = _.create(_item);
-                workqueue.setActive(_item);
+            if ($routeParams._id) {
+                _item = workqueue.find({_id: $routeParams._id}) || workqueue.active;
+                lock.lock(_item)['finally'](function() {
+                    $scope.item = _.create(_item);
+                    $scope.editable = !lock.isLocked(_item);
+                    workqueue.setActive(_item);
+                });
             }
         }
 
-        $scope.$watch('item', function(item, oldItem) {
-            if (item === oldItem) {
-                $scope.dirty = false;
+        function isEditable(item) {
+            if ($scope.isLocked(item)) {
+                return false;
+            }
+
+            if (!item._latest_version) {
+                return true;
+            }
+
+            return item._latest_version === item._version;
+        }
+
+        function isDirty(item) {
+            var dirty = false;
+            angular.forEach(item, function(val, key) {
+                dirty = dirty || val !== _item[key];
+            });
+
+            return dirty;
+        }
+
+        $scope.$watchCollection('item', function(item) {
+            if (!item) {
+                $scope.dirty = $scope.editable = false;
                 return;
             }
 
-            $scope.dirty = item && oldItem && item._id === oldItem._id;
-        }, true);
+            $scope.editable = isEditable(item);
+            $scope.dirty = isDirty(item);
+        });
 
-        $scope.create = function() {
-            var temp = {type: 'text'};
-            api.archive.save(temp, {}).then(function(newItem) {
-                workqueue.add(newItem);
-                $scope.switchArticle(newItem);
-            }, function(response) {
-                notify.error(gettext('Error. Item not created.'));
-            });
+        $scope.isLocked = function(item) {
+            return lock.isLocked(item);
         };
 
-        $scope.switchArticle = function(article) {
-            workqueue.update($scope.item);
-            workqueue.setActive(article);
-            $location.search({_id: article._id});
+        $scope.update = function() {
+            if ($scope.dirty && $scope.editable) {
+                api('autosave', $scope.item).save({}, $scope.item).then(function() {
+                    workqueue.update($scope.item);
+                });
+            }
         };
 
     	$scope.save = function() {
-    		api.archive.save(_item, $scope.item).then(function(res) {
-                workqueue.update($scope.item);
+            delete $scope.item._version;
+    		return api.archive.save(_item, $scope.item).then(function(res) {
+                workqueue.update(_item);
+                $scope.item = _.create(_item);
                 $scope.dirty = false;
                 notify.success(gettext('Item updated.'));
     		}, function(response) {
@@ -63,109 +153,17 @@ define([
     	};
 
         $scope.close = function() {
-            if ($scope.dirty) {
-                return confirmDirty().then(_close);
-            } else {
-                _close();
-            }
-        };
-
-        var confirmed = false;
-        $scope.$on('$locationChangeStart', function(e, next) {
-            if ($scope.dirty && !confirmed) {
-                e.preventDefault();
-                confirmDirty().then(function() {
-                    confirmed = true;
-                    $location.url(next.split('#')[1]);
-                });
-            }
-        });
-
-        $scope.$on('$routeUpdate', function() {
-            confirmed = false;
-            setupNewItem();
-        });
-
-        var _close = function() {
-            workqueue.remove(_item);
-            var active = workqueue.getActive();
-            $location.search('_id', active);
-            if (!active) {
-                $scope.item = null;
-                $scope.dirty = null;
-            }
-        };
-
-        function confirmDirty() {
-            return modal.confirm(gettext('There are unsaved changes. Please confirm you want to close the article without saving.'));
-        }
-    }
-
-    VersioningController.$inject = ['$scope', 'api', '$location', 'notify', 'workqueue'];
-    function VersioningController($scope, api, $location, notify, workqueue) {
-        $scope.item = null;
-        $scope.versions = null;
-        $scope.selected = null;
-        $scope.users = {};
-
-        $scope.$watch(function() {
-            return $location.search()._id;
-        }, function(_id) {
-            $scope.item = null;
-            $scope.versions = null;
-
-            if (_id) {
-                fetchItem(_id);
-            }
-        });
-
-        var fetchUser = function(id) {
-            api.users.getById(id)
-            .then(function(result) {
-                $scope.users[id] = result;
+            confirm.confirm().then(function() {
+                if ($scope.editable) {
+                    lock.unlock($scope.item);
+                }
+                $scope.dirty = false;
+                workqueue.remove($scope.item);
+                superdesk.intent('author', 'dashboard');
             });
         };
 
-        var fetchItem = function(id) {
-            id = id || $scope.item._id;
-            return api.archive.getById(id)
-            .then(function(result) {
-                $scope.item = result;
-                return fetchVersions();
-            });
-        };
-
-        var fetchVersions = function() {
-            $scope.users = {};
-            return api.archive.getByUrl($scope.item._links.self.href + '?version=all&embedded={"user":1}')
-            .then(function(result) {
-                _.each(result._items, function(version) {
-                    var creator = version.creator || version.original_creator;
-                    if (creator && !$scope.users[creator]) {
-                        fetchUser(creator);
-                    }
-                });
-                $scope.versions = result;
-                $scope.selected = _.find($scope.versions._items, {_version: $scope.item._latest_version});
-            });
-        };
-
-        $scope.revert = function(version) {
-            api.archive.replace($scope.item._links.self.href, {
-                type: 'text',
-                last_version: $scope.item._version,
-                old_version: version
-            })
-            .then(function(result) {
-                notify.success(gettext('Item reverted.'));
-                fetchItem()
-                .then(function() {
-                    workqueue.update($scope.item);
-                });
-            }, function(result) {
-                notify.error(gettext('Error. Item not reverted.'));
-            });
-        };
+        $scope.$on('$routeUpdate', setupNewItem);
     }
 
     WorkqueueService.$inject = ['storage'];
@@ -237,7 +235,11 @@ define([
          * Set given item as active
          */
         this.setActive = function(item) {
-            this.active = this.find({_id: item._id});
+            if (!item) {
+                this.active = null;
+            } else {
+                this.active = this.find({_id: item._id});
+            }
         };
 
         /**
@@ -264,37 +266,83 @@ define([
 
     }
 
+    WorkqueueCtrl.$inject = ['$scope', 'workqueue', 'superdesk', 'ContentCtrl'];
+    function WorkqueueCtrl($scope, workqueue, superdesk, ContentCtrl) {
+        $scope.workqueue = workqueue.all();
+        $scope.content = new ContentCtrl();
+
+        $scope.openItem = function(article) {
+            if ($scope.active) {
+                $scope.update();
+            }
+            workqueue.setActive(article);
+            superdesk.intent('author', 'article', article);
+        };
+
+        $scope.openDashboard = function() {
+            superdesk.intent('author', 'dashboard');
+        };
+
+        $scope.closeItem = function(item) {
+            if ($scope.active) {
+                $scope.close();
+            } else {
+                workqueue.remove(item);
+                superdesk.intent('author', 'dashboard');
+            }
+        };
+    }
+
+    function WorkqueueListDirective() {
+        return {
+            templateUrl: 'scripts/superdesk-authoring/views/opened-articles.html',
+            scope: {
+                active: '=',
+                update: '&',
+                close: '&'
+            },
+            controller: WorkqueueCtrl
+        };
+    }
+
     return angular.module('superdesk.authoring', [
             'superdesk.editor',
             'superdesk.authoring.widgets',
-            'superdesk.authoring.comments'
+            'superdesk.authoring.metadata',
+            'superdesk.authoring.comments',
+            'superdesk.authoring.versions'
         ])
 
+        .service('lock', LockService)
     	.service('workqueue', WorkqueueService)
+        .factory('ConfirmDirty', ConfirmDirtyFactory)
+        .directive('sdWorkqueue', WorkqueueListDirective)
 
         .config(['superdeskProvider', function(superdesk) {
             superdesk
-                .activity('/authoring/', {
+                .activity('/authoring/:_id', {
                 	label: gettext('Authoring'),
 	                templateUrl: 'scripts/superdesk-authoring/views/main.html',
+                    topTemplateUrl: 'scripts/superdesk-dashboard/views/workspace-topnav.html',
 	                controller: AuthoringController,
-	                category: superdesk.MENU_MAIN,
 	                beta: true,
-	                filters: [{action: 'article', type: 'author'}]
+	                filters: [{action: 'author', type: 'article'}]
 	            })
-	            .activity('/versions/', {
-                	label: gettext('Authoring - item versions'),
-	                templateUrl: 'scripts/superdesk-authoring/views/versions.html',
-	                controller: VersioningController,
-	                beta: true,
-	                filters: [{action: 'versions', type: 'author'}]
-	            })
+                .activity('/authoring/', {
+                    label: gettext('Authoring'),
+                    templateUrl: 'scripts/superdesk-authoring/views/dashboard.html',
+                    topTemplateUrl: 'scripts/superdesk-dashboard/views/workspace-topnav.html',
+                    beta: true,
+                    controller: WorkqueueCtrl,
+                    category: superdesk.MENU_MAIN,
+                    filters: [{action: 'author', type: 'dashboard'}]
+                })
 	            .activity('edit.text', {
 	            	label: gettext('Edit item'),
 	            	icon: 'pencil',
-	            	controller: ['data', '$location', 'workqueue', function(data, $location, workqueue) {
+	            	controller: ['data', '$location', 'workqueue', 'superdesk', function(data, $location, workqueue, superdesk) {
 	            		workqueue.add(data.item);
-	                    $location.path('/authoring/').search({_id: data.item._id});
+                        superdesk.intent('author', 'article', data.item);
 	                }],
 	            	filters: [
 	                    {action: superdesk.ACTION_EDIT, type: 'archive'}

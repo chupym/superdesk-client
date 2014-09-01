@@ -6,6 +6,43 @@ define([
     'use strict';
 
     return angular.module('superdesk.archive.directives', [])
+        .directive('sdItemLock', ['api', 'lock', function(api, lock) {
+            return {
+                templateUrl: 'scripts/superdesk-archive/views/item-lock.html',
+                scope: {item: '='},
+                link: function(scope) {
+                    scope.$watch('item.lock_user', function() {
+                        scope.lock = null;
+                        if (scope.item && lock.isLocked(scope.item)) {
+                            api('users').getById(scope.item.lock_user).then(function(user) {
+                                scope.lock = {user: user};
+                            });
+                        }
+                    });
+
+                    scope.unlock = function() {
+                        lock.unlock(scope.item).then(function() {
+                            scope.item.lock_user = null;
+                            scope.lock = null;
+                        });
+                    };
+
+                    scope.$on('item:lock', function(_e, data) {
+                        if (scope.item && scope.item._id === data.item) {
+                            scope.item.lock_user = data.user;
+                            scope.$digest();
+                        }
+                    });
+
+                    scope.$on('item:unlock', function(_e, data) {
+                        if (scope.item && scope.item._id === data.item) {
+                            scope.item.lock_user = null;
+                            scope.$digest();
+                        }
+                    });
+                }
+            };
+        }])
         .directive('sdInlineMeta', function() {
             return {
                 templateUrl: require.toUrl('./views/inline-meta.html'),
@@ -188,21 +225,13 @@ define([
                 }
             };
         }])
-        .directive('sdSidebarLayout', ['$location', '$filter', function($location, $filter) {
-            return {
-                transclude: true,
-                templateUrl: require.toUrl('./views/sidebar.html')
-            };
-        }])
-        .directive('sdMediaBox', function() {
+        .directive('sdMediaBox', ['lock', function(lock) {
             return {
                 restrict: 'A',
                 templateUrl: require.toUrl('./views/media-box.html'),
                 link: function(scope, element, attrs) {
-                    if (!scope.activityFilter && scope.extras) {
-                        scope.activityFilter = scope.extras.activityFilter;
-                    }
-                    scope.$watch('extras.view', function(view) {
+
+                    scope.$watch('view', function(view) {
                         switch (view) {
                         case 'mlist':
                         case 'compact':
@@ -211,11 +240,30 @@ define([
                         default:
                             scope.itemTemplate = require.toUrl('./views/media-box-grid.html');
                         }
-                        localStorage.setItem('archive:view', view);
+                    });
+
+                    scope.$watch('item', function(item) {
+                        scope.isLocked = item && lock.isLocked(item);
+                    });
+
+                    scope.$on('item:lock', function(_e, data) {
+                        if (scope.item && scope.item._id === data.item) {
+                            scope.isLocked = true;
+                            scope.item.lock_user = data.user;
+                            scope.$digest();
+                        }
+                    });
+
+                    scope.$on('item:unlock', function(_e, data) {
+                        if (scope.item && scope.item._id === data.item) {
+                            scope.isLocked = false;
+                            scope.item.lock_user = null;
+                            scope.$digest();
+                        }
                     });
                 }
             };
-        })
+        }])
         .directive('sdItemRendition', function() {
             return {
                 templateUrl: require.toUrl('./views/item-rendition.html'),
@@ -234,6 +282,7 @@ define([
                                 }
                             };
 
+                            img.onerror = function() {};
                             img.src = href;
                         }
                     });

@@ -312,4 +312,115 @@ define([
         }));
     });
 
+    describe('new api service', function() {
+        beforeEach(module(doConfig));
+
+        afterEach(inject(function($httpBackend) {
+            $httpBackend.verifyNoOutstandingExpectation();
+            $httpBackend.verifyNoOutstandingRequest();
+        }));
+
+        beforeEach(inject(function($httpBackend) {
+            $httpBackend.whenGET(SERVER_URL).respond(200, {
+                _links: {child: [
+                    {title: 'users', href: '/users'},
+                    {title: 'workspace', href: '/users/<regex():user_id>/workspace'}
+                ]}
+            });
+        }));
+
+        it('can create', inject(function(api, $httpBackend) {
+            var user = {name: 'foo'};
+
+            $httpBackend.expectPOST(USERS_URL, user).respond(201, {_id: 1});
+
+            api('users').save(user);
+
+            $httpBackend.flush();
+
+            expect(user._id).toBe(1);
+        }));
+
+        it('can update', inject(function(api, $httpBackend) {
+
+            var user = {_id: 1, _links: {self: {href: USER_PATH}}, name: 'foo'};
+            var diff = {name: 'bar'};
+
+            $httpBackend.expectPATCH(USER_URL, diff).respond(200, {name: 'bar'});
+
+            api('users').save(user, diff);
+
+            $httpBackend.flush();
+
+            expect(user.name).toBe('bar');
+        }));
+
+        it('can query resource', inject(function(api, $httpBackend) {
+            $httpBackend.expectGET(USERS_URL + '?limit=1').respond(200, {_items: []});
+
+            var users;
+            api('users').query({limit: 1}).then(function(_users) {
+                users = _users;
+            });
+
+            $httpBackend.flush();
+
+            expect(users._items.length).toBe(0);
+        }));
+
+        it('can query subresource', inject(function(api, $httpBackend) {
+
+            var user = {_id: 1};
+
+            $httpBackend.expectGET(USER_URL + '/workspace').respond(200, {});
+
+            api('workspace', user).query();
+
+            $httpBackend.flush();
+        }));
+
+        it('rejects on status error', inject(function(api, $httpBackend) {
+
+            $httpBackend.expectGET(USERS_URL).respond(400);
+
+            var success = jasmine.createSpy('success'),
+                error = jasmine.createSpy('error');
+
+            api('users').query().then(success, error);
+
+            $httpBackend.flush();
+
+            expect(success).not.toHaveBeenCalled();
+            expect(error).toHaveBeenCalled();
+        }));
+
+        it('rejects on data error', inject(function(api, $httpBackend) {
+
+            $httpBackend.expectPOST(USERS_URL).respond(200, {_status: 'ERR'});
+
+            var success = jasmine.createSpy('success'),
+                error = jasmine.createSpy('error');
+
+            api('users').save({}).then(success, error);
+
+            $httpBackend.flush();
+
+            expect(success).not.toHaveBeenCalled();
+            expect(error).toHaveBeenCalled();
+        }));
+
+        it('cleans data before saving it', inject(function(api, $httpBackend) {
+            $httpBackend.expectPOST(USERS_URL, {name: 'foo'}).respond(200);
+            api('users').save({name: 'foo', _created: 'now', _updated: 'now', _id: 1});
+            $httpBackend.flush();
+        }));
+
+        it('can fetch an item by id', inject(function(api, $httpBackend) {
+            var data = {_id: 1}, user;
+            $httpBackend.expectGET(USER_URL).respond(200, data);
+            api('users').getById(1).then(function(_user) {user = _user;});
+            $httpBackend.flush();
+            expect(user._id).toBe(1);
+        }));
+    });
 });

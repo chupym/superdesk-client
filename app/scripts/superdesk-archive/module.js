@@ -3,13 +3,15 @@ define([
     'require',
     './controllers/list',
     './controllers/upload',
+    './archive-widget/archive',
     './directives'
 ], function(angular, require) {
     'use strict';
 
     var app = angular.module('superdesk.archive', [
         require('./directives').name,
-        'superdesk.dashboard'
+        'superdesk.dashboard',
+        'superdesk.widgets.archive'
     ]);
 
     app.config(['superdeskProvider', function(superdesk) {
@@ -19,7 +21,10 @@ define([
                 priority: 100,
                 controller: require('./controllers/list'),
                 templateUrl: require.toUrl('./views/list.html'),
-                topTemplateUrl: require.toUrl('../superdesk-dashboard/views/workspace-topnav.html')
+                topTemplateUrl: require.toUrl('../superdesk-dashboard/views/workspace-topnav.html'),
+                filters: [
+                    {action: 'view', type: 'content'}
+                ]
             })
             .activity('upload.media', {
                 label: gettext('Upload media'),
