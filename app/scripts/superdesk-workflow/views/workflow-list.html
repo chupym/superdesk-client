@@ -1,0 +1,68 @@
+<div class="subnav">
+
+    <h3 class="page-nav-title" translate>Workflow</h3>
+
+    <div class="button-stack right-stack">
+        <a class="navbtn navbtn-info navbtn-hover" href="" ng-click="createWorkstation()">
+            <i class="svg-icon-add inverse"></i> <span class="title" translate>Add desk</span>
+        </a>
+    </div>
+</div>
+
+<section class="main-section workplaces">
+
+    <div class="preview-layout" ng-class="{closed: !selected.workstation}">
+        <div class="list-pane">
+            <header>
+                <div sd-searchbar></div>
+                <div sd-pagination
+                    data-items="workstations"
+                    data-limit="maxResults"></div>
+            </header>
+            <div class="content">
+                <div sd-shadow>
+                    <div class="workstations-table">
+                        <ul class="table-header">
+                            <li>
+                                <div class="row-wrapper">
+                                    <div class="name" sd-sort data-label="{{ 'Name' | translate }}" data-field="name"></div>
+                                    <div class="description" sd-sort data-label="{{ 'Description' | translate }}" data-field="description"></div>
+                                    <div class="created" sd-sort data-label="{{ 'Created' | translate }}" data-field="_created"></div>
+                                </div>
+                            </li>
+                        </ul>
+
+                        <div class="table-title" ng-show="createdWorkstations.length" translate>Recently added</div>
+
+                        <ul class="table-newest"
+                            sd-workstation-list
+                            data-workstations="createdWorkstations"
+                            data-selected="selected.workstation"
+                            data-done="afterDelete"
+                            ng-if="createdWorkstations.length"
+                        ></ul>
+
+                        <ul class="table-body"
+                            sd-workstation-list
+                            data-workstations="workstations._items"
+                            data-selected="selected.workstation"
+                            data-done="afterDelete"
+                        ></ul>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="preview-pane">
+            <header>
+                <button ng-click="selected.workstation = null" class="close-preview">
+                    <i class="icon-close-small"></i>
+                </button>
+            </header>
+            <div class="content" sd-workstation-details-pane ng-if="selected.workstation">
+                <div id="workstation-profile-edit" sd-workstation-edit data-workstation="selected.workstation" data-onsave="render(workstation)" data-oncancel="closePreview()"></div>
+            </div>
+        </div>
+    </div>
+</setion>

@@ -66,7 +66,8 @@
             'superdesk.scratchpad',
             'superdesk.desks',
             'superdesk.authoring',
-            'superdesk.editor'
+            'superdesk.editor',
+            'superdesk.workflow'
         ];
 
         require([
@@ -79,7 +80,8 @@
             'superdesk-ingest/module',
             'superdesk-scratchpad/module',
             'superdesk-desks/module',
-            'superdesk-authoring/module'
+            'superdesk-authoring/module',
+            'superdesk-workflow/module'
         ], function(bootstrap) {
             bootstrap(config, modules);
         });

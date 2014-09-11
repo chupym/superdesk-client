@@ -1,0 +1,12 @@
+<li ng-repeat="workstation in workstations" ng-click="select(workstation)" ng-class="{selected: workstation === selected}">
+
+    <div class="row-wrapper" sd-col-width>
+        <div class="name">{{ workstation.name }}</div>
+        <div class="description">{{ workstation.description }}</div>
+        <div class="created">{{ workstation._created | reldate}}</div>
+    </div>
+
+</li>
+
+<li class="alert alert-info" ng-show="workstations.length == null"><p translate>Loading..</p></li>
+<li class="alert alert-info" ng-show="workstations.length == 0"><p translate>Oops! There are no items.</p></li>
