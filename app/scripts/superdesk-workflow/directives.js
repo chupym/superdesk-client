@@ -60,8 +60,6 @@ define([
         .directive('sdWorkstationEdit', ['gettext', 'notify', 'api', 'session', '$location', '$route', 'superdesk',
         function(gettext, notify, api, session, $location, $route, superdesk) {
         	
-        	var MAX_RESULTS = 10;
-        	
             return {
                 replace: true,
                 templateUrl: require.toUrl('./views/edit-form.html'),
@@ -120,28 +118,93 @@ define([
                         });
                     };
                     
-                    scope.memberNew = null;
-                    scope.addMember = function() {
-                    	scope.memberNew = {username:'Gabriel'};
-                    };
+                    function resetWorkstation(workstation) {
+                        scope.error = null;
+                        scope.workstation = _.create(workstation);
+                    }
+                    
+                    
+                    
+                    
+                    
+                    
+                    
                     
 
-                    scope.$watch('origWorkstation', function(workstation) {
-                        scope.members = [];
-                        _.each(workstation.members, function(member) {
-                        	var m = {
-                        		userid: member.user
-                        	};
-                        	api.users.query({where: {_id: member.user}}).then(function(users) {
-                        		m.username = users._items[0].username;
-    	                    });
-                        	scope.members.push(m);
-                        });
-                    });
-                    scope.newUsername = '';
+                    function processMembers(workstation){
+                    	scope.members = [];
+                    	api.workflow.query().then(function(workflows) {
+                    		var workflowsById = {};
+                    		_.each(workflows._items, function(workflow) {
+                    			workflowsById[workflow._id] = workflow.name;
+                    		});
+                    		
+                    		_.each(workstation.members, function(member) {
+                            	var m = {
+                            		userid: member.user,
+                            		workflows: []
+                            	};
+                            	api.users.query({where: {_id: member.user}}).then(function(users) {
+                            		m.username = users._items[0].username;
+        	                    });
+                            	_.each(member.workflows, function(workflow_id) {
+                        			m.workflows.push(workflowsById[workflow_id]);
+                        		});
+                            	
+                            	scope.members.push(m);
+                            });
+	                    });
+                        
+                    }
+                    scope.$watch('origWorkstation', processMembers);
+                    
+                    scope.member = null;
+                    scope.editMember = function(workstation) {
+                    	scope.member = {workstation:workstation, data:{}, workflows:[]};
+                    	api.workflow.query().then(function(workflows) {
+                    		_.each(workflows._items, function(workflow) {
+                    			//workflow.checked = scope.member.data.workflows.indexOf(workflow._id) > -1;
+                    			workflow.checked = false;
+                    			scope.member.workflows.push(workflow); 
+                    		});
+	                    });
+                    };
+                    scope.saveMember = function() {
+                    	var workstation = scope.member.workstation;
+                    	if (workstation.members){
+                    		workstation.members = workstation.members.slice(0);
+                    	} else {
+                    		workstation.members = [];
+                    	}
+                    	
+                    	var addMember = true;
+                    	var member = scope.member.data;
+                    	_.each(workstation.members, function(m) {
+                			if(m.user == member.user) {
+                				member = m;
+                				addMember = false;
+                				return false;
+                			}
+                		});
+                    	
+                    	member.workflows = [];
+                    	_.each(scope.member.workflows, function(workflow) {
+                			if(workflow.checked) {
+                				member.workflows.push(workflow._id);
+                			}
+                		});
+                    	if (addMember){
+                    		workstation.members.push(member);
+                    	}
+                    	processMembers(workstation);
+                    	scope.member = null;
+                    };
+                    scope.cancelMember = function() {
+                    	scope.member = null;
+                    };
                     scope.usersSearch = function(term) {
                     	var criteria = {
-                             max_results: MAX_RESULTS
+                             max_results: 5
                         };
                     	criteria.where = JSON.stringify({
                             '$or': [
@@ -153,16 +216,14 @@ define([
 	                    });
                     };
                     scope.userSelect = function(item) {
-                    	scope.userTerm = item.username;
+                    	scope.member.userName = item.username;
+                    	scope.member.data.user = item._id;
+                    };
+                    scope.users = [];
+                    scope.workflowSelect = function(workflow) {
+                    	alert(workflow);
                     };
                     
-                    
-                    
-
-                    function resetWorkstation(workstation) {
-                        scope.error = null;
-                        scope.workstation = _.create(workstation);
-                    }
                 }
             };
         }]);

@@ -23,6 +23,9 @@ define([
             apiProvider.api('workstation', {
                 type: 'http',
                 backend: {rel: 'workstation'}
+            }).api('workflow', {
+                type: 'http',
+                backend: {rel: 'workflow'}
             });
         }]);
 });

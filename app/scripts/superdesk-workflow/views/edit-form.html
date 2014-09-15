@@ -25,27 +25,15 @@
 	                
 	                <div sd-info-item>
 	                  <label for="members" translate>members</label>
+	                  <div ng-repeat="member in members">
+	                  	<div>
+		                  <b>{{ member.username }}:&nbsp;</b>
+		                  <i ng-repeat="name in member.workflows">{{name}}{{$last ? '' : ', '}}</i>
+					    </div>
+	                  </div>
 	                </div>
-	                
-	                <div ng-repeat="member in members">
-	                	<div sd-typeahead items="users" term="members[$index].username" search="usersSearch(term)" select="userSelect(item)">
-		         		  <ul>
-							<li typeahead-item="user" ng-repeat="user in users">
-								{{user.username}}
-							</li>
-						  </ul>
-					   </div>
-	                </div>
-	                
-	                <div sd-typeahead items="users" term="newUsername" search="usersSearch(term)" select="userSelect(item)">
-	         		  <ul>
-						<li typeahead-item="user" ng-repeat="user in users">
-							{{user.username}}
-						</li>
-					  </ul>
-				   </div>
 				   
-				   <a class="btn btn-info pull-right" ng-click="addMember()">
+				   <a class="btn btn-info pull-right" ng-click="editMember(workstation)">
 				      <i class="icon-plus-sign icon-white"></i> <span translate>Add member</span>
 				   </a>
 	                
@@ -54,28 +42,31 @@
 	    </div>
 	</form>
 
-	<div sd-modal-view data-model="memberNew">
-        <div class="modal-header"> <a href="" class="close" ng-click="cancel()"><i class="icon-close-small"></i></a>
+	<div sd-modal-view data-model="member">
+        <div class="modal-header"> <a href="" class="close" ng-click="cancelMember()"><i class="icon-close-small"></i></a>
             <h3 translate>Add New Member</h3>
         </div>
 
         <div class="modal-body">
-            <form name="editForm" ng-submit="save()">
+            <form name="editForm" ng-submit="saveMember()">
                 
                 <fieldset>
                     
                     <div class="field">
-                        <label for="provider-type" translate>Source Type</label>
-                        <select id="provider-type" required ng-model="provider.type" ng-options="key as val.label for (key, val) in types"></select>
+                        <label for="member-user" translate>User</label>
+                        <div sd-typeahead id="member-user" items="users" term="member.userName" search="usersSearch(term)" select="userSelect(item)">
+		         		  <ul>
+							<li typeahead-item="user" ng-repeat="user in users">
+								{{user.username}}
+							</li>
+						  </ul>
+					   </div>
                     </div>
-
-                    <div class="field">
-                        <label for="provider-name" translate>Provider Name</label>
-                        <input type="text" id="provider-name" ng-model="provider.name">
-                    </div>
-
-                    <div class="field credentials">
-                        <div ng-include="types[provider.type].templateUrl"></div>
+                    
+                    <div ng-repeat="workflow in member.workflows">
+	                    <div class="field">
+	                    	<input type="checkbox" ng-model="workflow.checked">   {{workflow.name}}</input>
+	                    </div>
                     </div>
 
                 </fieldset>
@@ -84,8 +75,8 @@
         </div>
 
         <div class="modal-footer">
-            <button class="btn btn-default" ng-click="cancel()" translate>Cancel</button>
-            <button class="btn btn-primary" ng-click="save()" ng-disabled="!editForm.$valid" translate>Save</button>
+            <button class="btn btn-default" ng-click="cancelMember()" translate>Cancel</button>
+            <button class="btn btn-primary" ng-click="saveMember()" ng-disabled="!member.data.user" translate>Save</button>
         </div>
     </div>
   
