@@ -29,20 +29,19 @@ function CommentsService(api) {
     };
 }
 
-CommentsCtrl.$inject = ['$scope', 'commentsService'];
-function CommentsCtrl($scope, commentsService) {
+CommentsCtrl.$inject = ['$scope', '$routeParams', 'commentsService', 'api', '$q'];
+function CommentsCtrl($scope, $routeParams, commentsService, api, $q) {
 
     $scope.text = null;
     $scope.saveEnterFlag = false;
     $scope.$watch('item._id', reload);
-    $scope.$on('changes in archive_comment', reload);
+    $scope.users = [];
 
     $scope.saveOnEnter = function($event) {
         if (!$scope.saveEnterFlag || $event.keyCode !== ENTER || $event.shiftKey) {
             return;
         }
         $scope.save();
-        return false;
     };
 
     $scope.save = function() {
@@ -65,13 +64,59 @@ function CommentsCtrl($scope, commentsService) {
     };
 
     function reload() {
-        commentsService.fetch($scope.item._id).then(function() {
-            $scope.comments = commentsService.comments;
-        });
+        if ($scope.item) {
+            commentsService.fetch($scope.item._id).then(function() {
+                $scope.comments = commentsService.comments;
+            });
+        }
     }
+
+    $scope.$on('item:comment', function(e, data) {
+        if (data.item === $scope.item.guid) {
+            reload();
+        }
+    });
+
+    function setActiveComment() {
+        $scope.active = $routeParams.comments || null;
+    }
+
+    $scope.$on('$locationChangeSuccess', setActiveComment);
+    setActiveComment();
 }
 
-angular.module('superdesk.authoring.comments', ['superdesk.authoring.widgets'])
+CommentTextDirective.$inject = ['$compile'];
+function CommentTextDirective($compile) {
+    return {
+        scope: {
+            comment: '='
+        },
+        link: function(scope, element, attrs) {
+
+            var html;
+
+            //replace new lines with paragraphs
+            html  = attrs.text.replace(/(?:\r\n|\r|\n)/g, '</p><p>');
+
+            //map user mentions
+            var mentioned = html.match(/\@([a-zA-Z0-9-_.]\w+)/g);
+            _.each(mentioned, function(token) {
+                var username = token.substring(1, token.length);
+                if (scope.comment.mentioned_users) {
+                    html = html.replace(token,
+                    '<i sd-user-info data-user="' + scope.comment.mentioned_users[username] + '">' + token + '</i>');
+                }
+            });
+
+            //build element
+            element.html('<p><b>' + attrs.name + '</b> : ' + html + '</p>');
+
+            $compile(element.contents())(scope);
+        }
+    };
+}
+
+angular.module('superdesk.authoring.comments', ['superdesk.authoring.widgets', 'mentio'])
     .config(['authoringWidgetsProvider', function(authoringWidgetsProvider) {
         authoringWidgetsProvider
             .widget('comments', {
@@ -89,6 +134,7 @@ angular.module('superdesk.authoring.comments', ['superdesk.authoring.widgets'])
     }])
 
     .controller('CommentsWidgetCtrl', CommentsCtrl)
-    .service('commentsService', CommentsService);
+    .service('commentsService', CommentsService)
+    .directive('sdCommentText', CommentTextDirective);
 
 })();

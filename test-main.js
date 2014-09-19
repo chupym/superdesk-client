@@ -15,9 +15,12 @@ for (var file in window.__karma__.files) {
 }
 
 // we have to put here files tested without requirejs
+tests.push('superdesk/menu/menu');
+tests.push('superdesk/menu/notifications/notifications');
 tests.push('superdesk-authoring/widgets/widgets');
 tests.push('superdesk-authoring/comments/comments');
 tests.push('superdesk-workspace/content/content');
+tests.push('bower_components/ment.io/dist/mentio');
 
 requirejs.config({
     baseUrl: '/base/app/scripts',
