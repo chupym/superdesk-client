@@ -1,0 +1,18 @@
+<li ng-repeat="workitem in workitems" ng-click="select(workitem)" ng-class="{selected: workitem === selected.workitem}">
+
+    <div class="row-wrapper" sd-col-width>
+        <div class="name">{{ workitem.name }}</div>
+        <div class="created">{{ workitem._created | reldate}}</div>
+    </div>
+
+	<div class="action">
+		<div class="item-functions">
+		<!-- 
+			<i ng-repeat="workplace in destinations">{{workplace.name}}{{$last ? '' : ', '}}</i>
+		 -->
+		 	<a ng-click="moveItem(workitem, workplace.target)" ng-repeat="workplace in destinations">{{workplace.name}}</a>
+		</div>
+    </div>
+</li>
+<li class="alert alert-info" ng-show="workitems.length == null"><p translate>Loading..</p></li>
+<li class="alert alert-info" ng-show="workitems.length == 0"><p translate>Oops! There are no items.</p></li>

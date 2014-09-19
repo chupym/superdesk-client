@@ -1,0 +1,94 @@
+<div>
+	<div class="subnav">
+	
+	    <h3 class="page-nav-title" translate>Workitem</h3>
+	
+	    <div class="button-stack right-stack">
+	        <a class="navbtn navbtn-info navbtn-hover" href="" ng-click="createWorkitem()">
+	            <i class="svg-icon-add inverse"></i> <span class="title" translate>Add item</span>
+	        </a>
+	    </div>
+	</div>
+	
+    <div class="settingsPage">
+        <div class="tabbable">
+            <ul class="nav-tabs nav-stacked">
+                <li ng-repeat="workplace in workplaces" ng-class="{active: selected.workplace._id === workplace._id}">
+                	<a ng-click="select(workplace)" href="">{{ workplace.name }}</a>
+                </li>
+            </ul>
+            <div class="tab-content">
+            	<div class="tab-pane">
+	           		<div class="list-pane">
+			            <header>
+			                <div sd-searchbar></div>
+			                <div sd-pagination
+			                    data-items="workitems"
+			                    data-limit="maxResults"></div>
+			            </header>
+			            <div class="content">
+			                <div sd-shadow>
+			                    <div class="workitems-table">
+			                        <ul class="table-header">
+			                            <li>
+			                                <div class="row-wrapper">
+			                                    <div class="name" sd-sort data-label="{{ 'Name' | translate }}" data-field="name"></div>
+			                                    <div class="created" sd-sort data-label="{{ 'Created' | translate }}" data-field="_created"></div>
+			                                </div>
+			                            </li>
+			                        </ul>
+			
+			                        <div class="table-title" ng-show="createdWorkitems.length" translate>Recently added</div>
+			
+			                        <ul class="table-newest"
+			                            sd-workitem-list
+			                            data-workitems="createdWorkitems"
+			                            data-destinations="destinations"
+			                            data-selected="selected.workitem"
+			                            data-done="afterDelete"
+			                            ng-if="createdWorkitems.length"
+			                        ></ul>
+			
+			                        <ul class="table-body"
+			                            sd-workitem-list
+			                            data-workitems="workitems._items"
+			                            data-destinations="destinations"
+			                            data-selected="selected.workitem"
+			                            data-done="afterDelete"
+			                        ></ul>
+			
+			                    </div>
+			          	</div>
+			       	</div>
+               	</div>
+            </div>
+        </div>
+	    
+	</div>
+	
+	<div sd-modal-view data-model="workitem">
+        <div class="modal-header"> <a href="" class="close" ng-click="cancelWorkitem()"><i class="icon-close-small"></i></a>
+            <h3 translate>Add Item</h3>
+        </div>
+
+        <div class="modal-body">
+            <form name="editForm" ng-submit="saveWorkitem()">
+                
+                <fieldset>
+                    
+                    <div class="field">
+                        <label for="member-user" translate>Name</label>
+                        <input type="text" id="item-name" ng-model="workitem.name">
+                    </div>
+
+                </fieldset>
+
+            </form>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn btn-default" ng-click="cancelWorkitem()" translate>Cancel</button>
+            <button class="btn btn-primary" ng-click="saveWorkitem()" ng-disabled="!workitem.name" translate>Save</button>
+        </div>
+    </div>
+</div>

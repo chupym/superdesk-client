@@ -165,6 +165,155 @@
 	}
 }
 
+.workitems-table {	//main list styles
+	
+	border-top: 2px solid #d7d7d7;
+	.table-header {
+		background: #fff;
+	}
+  .table-title {
+    height: 30px;
+    font-size: 11px;
+    color: #8a8a8a;
+    line-height: 30px;
+    .text-light();
+    text-transform: uppercase;
+  }
+	.table-newest {
+		margin: 0 0 30px;
+    background: #fafdf6;
+    border-top: 1px solid #d7d7d7;
+	}
+  .table-body {
+    margin-top: -1px;
+  }
+	.table-body {
+		background: #fff;
+		border-top: 1px solid #d7d7d7;
+	}
+	.table-header, .table-newest, .table-body {
+
+		> li {
+			height: 40px;
+			border-bottom: 1px solid #d7d7d7;
+			position: relative;
+      .avatar {
+          margin: 5px;
+      }
+			> div {
+				float: left;
+				height: 30px;
+				padding: 5px;
+				line-height: 30px;
+				//column width 
+				&.chckbx {
+					width: 25px;
+					text-align: center;
+					span {
+						vertical-align: middle;
+						margin: 0;
+					}
+				}
+				@user-table-actions-width: 40px;
+				&.row-wrapper {
+					position: absolute;
+					left: 60px;
+					right: @user-table-actions-width+10;
+					top: 5px;
+					padding: 0;
+					.box-sizing(border-box);
+					> div {
+						display: inline-block;
+						overflow: hidden;
+						text-overflow: ellipsis;
+						white-space: nowrap;
+						.box-sizing(border-box);
+						padding: 0 5px;
+						&.name, &.email {
+							color: #218baa;
+						}
+						//user columns width
+						&.name { width: 70%; }
+						&.created { width: 25%; }
+					}
+				}
+				&.action {
+					background: #fff;
+					float: right;
+					width: 300px;
+					line-height: 18px !important;
+				}
+			}
+		}
+	}	
+	.table-header {
+		> li > div, .name, .email {
+			color: #000 !important;
+			.text-semibold();
+		}
+    .sortable {
+      i {
+        margin: -2px 0 0 5px;
+      }
+      &:hover {
+        cursor: pointer;
+      }
+    }
+	}
+	.table-body , .table-newest {
+		> li {
+
+			&.selected {
+				background: #eff7fa;
+			}
+			&:hover {
+				background: #f4f4f4;
+				cursor: pointer;
+			}
+
+			> div {
+				&.action {
+					padding: 0;
+					height: 40px;
+					.item-functions {
+						border-left: 1px solid #d8d8d8;
+						display: none;
+						height: 40px;
+						background: #d9edf7;
+						span {
+							color: #0000ff;
+							text-align: center;
+							height: 40px;
+							margin-right: 5px;
+							font-size: 10px;
+      						font-weight: bold;
+						}
+					}
+				}
+			}
+
+			&:hover {
+				> div.action .item-functions {
+					display: block;
+				}
+			}
+
+		}
+	}
+	.alert {
+		height: auto !important;
+		.border-radius(0px);
+		border-width: 0 0 1px;
+
+		&.alert-info {
+			border-color: #bce8f1;
+			&:hover {
+				background: #d9edf7;
+			}
+		}
+
+	}
+}
 
 /*
 ====================================================

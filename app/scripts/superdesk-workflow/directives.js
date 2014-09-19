@@ -122,14 +122,6 @@ define([
                         scope.error = null;
                         scope.workstation = _.create(workstation);
                     }
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
 
                     function processMembers(workstation){
                     	scope.members = [];
@@ -226,5 +218,48 @@ define([
                     
                 }
             };
-        }]);
+        }])
+        
+        
+        
+        
+        .directive('sdWorkitemList', ['keyboardManager', 'api', function(keyboardManager, api) {
+                return {
+                    templateUrl: 'scripts/superdesk-workflow/views/workitem-list-item.html',
+                    scope: {
+                        workitems: '=',
+                        destinations: '=',
+                        selected: '=',
+                        done: '='
+                    },
+                    link: function(scope, elem, attrs) {
+                        scope.select = function(workitem) {
+                            scope.selected = workitem;
+                        };
+
+                        function getSelectedIndex() {
+                            return _.findIndex(scope.workitems, scope.selected);
+                        }
+
+                        keyboardManager.bind('up', function() {
+                            var selectedIndex = getSelectedIndex();
+                            if (selectedIndex !== -1) {
+                                scope.select(scope.workitems[_.max([0, selectedIndex - 1])]);
+                            }
+                        });
+
+                        keyboardManager.bind('down', function() {
+                            var selectedIndex = getSelectedIndex();
+                            if (selectedIndex !== -1) {
+                                scope.select(scope.workitems[_.min([scope.workitems.length - 1, selectedIndex + 1])]);
+                            }
+                        });
+                        scope.moveItem = function(item, target) {
+                        	var nitem = _.create(item);
+                        	nitem.target = target;
+                        	api.workitem.save(item, nitem);
+                        };
+                    }
+                };
+            }]);
 });
