@@ -8,13 +8,6 @@ define(['lodash'], function(_) {
         $scope.selected = {workitem: null};
         $scope.createdWorkitems = [];
 
-        $scope.afterDelete = function(data) {
-            if ($scope.selected.workitem && data.item && data.item.href === $scope.selected.workitem.href) {
-                $scope.selected.workitem = null;
-            }
-            fetchWorkitems(getCriteria());
-        };
-
         function getCriteria() {
             var params = $location.search(),
                 criteria = {

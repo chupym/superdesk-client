@@ -254,10 +254,12 @@ define([
                                 scope.select(scope.workitems[_.min([scope.workitems.length - 1, selectedIndex + 1])]);
                             }
                         });
-                        scope.moveItem = function(item, target) {
+                        scope.moveItem = function(items, index, target) {
+                        	var item = items[index];
                         	var nitem = _.create(item);
                         	nitem.target = target;
                         	api.workitem.save(item, nitem);
+                        	items.splice(index, 1);
                         };
                     }
                 };

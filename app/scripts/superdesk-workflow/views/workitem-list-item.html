@@ -10,7 +10,7 @@
 		<!-- 
 			<i ng-repeat="workplace in destinations">{{workplace.name}}{{$last ? '' : ', '}}</i>
 		 -->
-		 	<a ng-click="moveItem(workitem, workplace.target)" ng-repeat="workplace in destinations">{{workplace.name}}</a>
+		 	<a ng-click="moveItem(workitems, $parent.$index, workplace.target)" ng-repeat="workplace in destinations">{{workplace.name}}    </a>
 		</div>
     </div>
 </li>
